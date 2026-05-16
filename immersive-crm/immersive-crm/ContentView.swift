@@ -6,21 +6,84 @@
 //
 
 import SwiftUI
-import RealityKit
-import RealityKitContent
+import SwiftData
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Model3D(named: "Scene", bundle: realityKitContentBundle)
-                .padding(.bottom, 50)
 
-            Text("Hello, world!")
+    @Environment(\.modelContext)
+    private var modelContext
+
+    @Query(sort: \Prospect.createdAt, order: .reverse)
+    private var prospects: [Prospect]
+
+    @State private var selectedProspect: Prospect?
+
+    @State private var showingAddSheet = false
+
+    var body: some View {
+
+        NavigationSplitView {
+
+            List(prospects, selection: $selectedProspect) {
+
+                prospect in
+
+                VStack(alignment: .leading, spacing: 4) {
+
+                    Text(prospect.fullName)
+                        .font(.headline)
+
+                    if !prospect.company.isEmpty {
+
+                        Text(prospect.company)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 6)
+            }
+            .navigationTitle("Rolodex")
+            .toolbar {
+
+                ToolbarItem {
+
+                    Button {
+
+                        showingAddSheet = true
+
+                    } label: {
+
+                        Label(
+                            "Add Prospect",
+                            systemImage: "plus"
+                        )
+                    }
+                }
+            }
+
+        } detail: {
+
+            if let selectedProspect {
+
+                ProspectDetailView(
+                    prospect: selectedProspect
+                )
+
+            } else {
+
+                ContentUnavailableView(
+                    "Select a Prospect",
+                    systemImage: "person.crop.circle"
+                )
+            }
         }
-        .padding()
+        .sheet(isPresented: $showingAddSheet) {
+
+            AddProspectView()
+        }
     }
 }
 
 #Preview(windowStyle: .automatic) {
+
     ContentView()
 }
