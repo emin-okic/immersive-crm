@@ -5,12 +5,15 @@
 //  Created by Emin Okic on 5/16/26.
 //
 
-
 import SwiftUI
+import SwiftData
 
 struct ProspectDetailView: View {
 
-    let prospect: Prospect
+    @Environment(\.modelContext)
+    private var modelContext
+
+    @Bindable var prospect: Prospect
 
     var body: some View {
 
@@ -18,50 +21,128 @@ struct ProspectDetailView: View {
 
             VStack(
                 alignment: .leading,
-                spacing: 24
+                spacing: 28
             ) {
 
-                VStack(alignment: .leading) {
+                //
+                // HEADER
+                //
+                VStack(
+                    alignment: .leading,
+                    spacing: 8
+                ) {
 
-                    Text(prospect.fullName)
+                    Text("Prospect Details")
                         .font(.largeTitle)
+                        .fontWeight(.bold)
 
-                    Text(prospect.company)
-                        .font(.title3)
+                    Text("Manage contact information")
                         .foregroundStyle(.secondary)
                 }
 
                 Divider()
 
+                //
+                // CONTACT INFO
+                //
                 VStack(
                     alignment: .leading,
-                    spacing: 16
+                    spacing: 20
                 ) {
 
-                    Label(
-                        prospect.email,
-                        systemImage: "envelope"
+                    TextField(
+                        "Full Name",
+                        text: $prospect.fullName
                     )
+                    .textFieldStyle(.roundedBorder)
 
-                    Label(
-                        prospect.phone,
-                        systemImage: "phone"
+                    TextField(
+                        "Company",
+                        text: $prospect.company
+                    )
+                    .textFieldStyle(.roundedBorder)
+
+                    TextField(
+                        "Email",
+                        text: $prospect.email
+                    )
+                    .textFieldStyle(.roundedBorder)
+
+                    TextField(
+                        "Phone",
+                        text: $prospect.phone
+                    )
+                    .textFieldStyle(.roundedBorder)
+                }
+
+                Divider()
+
+                //
+                // NOTES
+                //
+                VStack(
+                    alignment: .leading,
+                    spacing: 12
+                ) {
+
+                    Text("Notes")
+                        .font(.headline)
+
+                    TextEditor(
+                        text: $prospect.notes
+                    )
+                    .frame(height: 220)
+                    .padding(12)
+                    .background(.gray.opacity(0.1))
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: 16
+                        )
                     )
                 }
 
                 Divider()
 
-                VStack(alignment: .leading) {
+                //
+                // FUTURE ACTIVITY SECTION
+                //
+                VStack(
+                    alignment: .leading,
+                    spacing: 16
+                ) {
 
-                    Text("Notes")
+                    Text("Activity")
                         .font(.headline)
 
-                    Text(prospect.notes)
+                    HStack(spacing: 20) {
+
+                        ActivityCard(
+                            title: "Calls",
+                            value: "0",
+                            icon: "phone.fill"
+                        )
+
+                        ActivityCard(
+                            title: "Emails",
+                            value: "0",
+                            icon: "envelope.fill"
+                        )
+
+                        ActivityCard(
+                            title: "Meetings",
+                            value: "0",
+                            icon: "calendar"
+                        )
+                    }
                 }
 
                 Spacer()
             }
-            .padding(30)
+            .padding(40)
+        }
+        .onDisappear {
+
+            try? modelContext.save()
         }
     }
 }

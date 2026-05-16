@@ -24,22 +24,30 @@ struct ContentView: View {
 
         NavigationSplitView {
 
-            List(prospects, selection: $selectedProspect) {
+            List(selection: $selectedProspect) {
 
-                prospect in
+                ForEach(prospects) { prospect in
 
-                VStack(alignment: .leading, spacing: 4) {
+                    NavigationLink(value: prospect) {
 
-                    Text(prospect.fullName)
-                        .font(.headline)
+                        VStack(
+                            alignment: .leading,
+                            spacing: 4
+                        ) {
 
-                    if !prospect.company.isEmpty {
+                            Text(prospect.fullName)
+                                .font(.headline)
 
-                        Text(prospect.company)
-                            .foregroundStyle(.secondary)
+                            if !prospect.company.isEmpty {
+
+                                Text(prospect.company)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 6)
                     }
+                    .tag(prospect)
                 }
-                .padding(.vertical, 6)
             }
             .navigationTitle("Rolodex")
             .toolbar {
