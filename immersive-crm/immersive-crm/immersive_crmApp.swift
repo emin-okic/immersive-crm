@@ -6,12 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct immersive_crmApp: App {
+
     var body: some Scene {
+
         WindowGroup {
+
             ContentView()
         }
+        .modelContainer(for: [
+            Prospect.self
+        ])
     }
 }
