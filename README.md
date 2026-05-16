@@ -19,8 +19,6 @@ The application should feel like a spatial dashboard that surrounds the user wit
 
 ---
 
-# Lean Canvas
-
 ## Target Users
 
 The target users are direct marketers, particularly:
