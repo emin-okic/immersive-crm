@@ -18,7 +18,8 @@ struct immersive_crmApp: App {
             ContentView()
         }
         .modelContainer(for: [
-            Prospect.self
+            Prospect.self,
+            Note.self
         ])
     }
 }
