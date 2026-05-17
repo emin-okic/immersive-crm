@@ -15,13 +15,22 @@ struct ProspectDetailView: View {
 
     @Bindable var prospect: Prospect
 
+    @State private var noteDraft = ""
+
+    private var sortedNotes: [Note] {
+
+        prospect.notes.sorted {
+            $0.createdAt > $1.createdAt
+        }
+    }
+
     var body: some View {
 
         ScrollView {
 
             VStack(
                 alignment: .leading,
-                spacing: 28
+                spacing: 32
             ) {
 
                 //
@@ -78,40 +87,99 @@ struct ProspectDetailView: View {
                 Divider()
 
                 //
-                // NOTES
+                // NOTES SECTION
                 //
                 VStack(
                     alignment: .leading,
-                    spacing: 12
+                    spacing: 20
                 ) {
 
-                    Text("Notes")
-                        .font(.headline)
+                    HStack {
 
-                    TextEditor(
-                        text: $prospect.notes
-                    )
-                    .frame(height: 220)
-                    .padding(12)
-                    .background(.gray.opacity(0.1))
-                    .clipShape(
-                        RoundedRectangle(
-                            cornerRadius: 16
+                        Text("Activity Feed")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+
+                        Spacer()
+
+                        Text("\(prospect.notes.count) Notes")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    //
+                    // COMPOSER
+                    //
+                    HStack(spacing: 12) {
+
+                        TextField(
+                            "Add a note...",
+                            text: $noteDraft,
+                            axis: .vertical
                         )
-                    )
+                        .textFieldStyle(.roundedBorder)
+                        .lineLimit(1...4)
+
+                        Button {
+
+                            addNote()
+
+                        } label: {
+
+                            Image(systemName: "paperplane.fill")
+                                .font(.headline)
+                                .padding(10)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(
+                            noteDraft
+                                .trimmingCharacters(
+                                    in: .whitespacesAndNewlines
+                                )
+                                .isEmpty
+                        )
+                    }
+
+                    //
+                    // NOTES THREAD
+                    //
+                    LazyVStack(
+                        alignment: .leading,
+                        spacing: 14
+                    ) {
+
+                        if sortedNotes.isEmpty {
+
+                            ContentUnavailableView(
+                                "No Notes Yet",
+                                systemImage: "bubble.left"
+                            )
+
+                        } else {
+
+                            ForEach(sortedNotes) { note in
+
+                                NoteCardView(
+                                    note: note,
+                                    onDelete: {
+                                        delete(note)
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Divider()
 
                 //
-                // FUTURE ACTIVITY SECTION
+                // FUTURE METRICS
                 //
                 VStack(
                     alignment: .leading,
                     spacing: 16
                 ) {
 
-                    Text("Activity")
+                    Text("Activity Metrics")
                         .font(.headline)
 
                     HStack(spacing: 20) {
@@ -129,14 +197,12 @@ struct ProspectDetailView: View {
                         )
 
                         ActivityCard(
-                            title: "Meetings",
-                            value: "0",
-                            icon: "calendar"
+                            title: "Notes",
+                            value: "\(prospect.notes.count)",
+                            icon: "note.text"
                         )
                     }
                 }
-
-                Spacer()
             }
             .padding(40)
         }
@@ -144,5 +210,46 @@ struct ProspectDetailView: View {
 
             try? modelContext.save()
         }
+    }
+
+    //
+    // ADD NOTE
+    //
+    private func addNote() {
+
+        let trimmed = noteDraft.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
+
+        guard !trimmed.isEmpty else {
+            return
+        }
+
+        let note = Note(
+            content: trimmed,
+            prospect: prospect
+        )
+
+        prospect.notes.append(note)
+
+        modelContext.insert(note)
+
+        try? modelContext.save()
+
+        noteDraft = ""
+    }
+
+    //
+    // DELETE NOTE
+    //
+    private func delete(_ note: Note) {
+
+        prospect.notes.removeAll {
+            $0 == note
+        }
+
+        modelContext.delete(note)
+
+        try? modelContext.save()
     }
 }
